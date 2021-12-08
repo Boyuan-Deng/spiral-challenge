@@ -23,10 +23,6 @@ class Operator:
 		"""
 		self.operatorId = operatorId
 		self.code = code
-		
-
-		# set over list
-
 		self.upstream = set()
 		self.downstream = set()
 
@@ -56,20 +52,23 @@ def register_workflow(
 	Returns:
 	    this API does not return anything.
 	"""
-	registered_workflows = {}
+
+	# construct operators dictionary
 	operators = {k:Operator(k, v) for k, v in operators.items()}
 
+	# populate each operator's upstream and downstream attribute 
 	for a, b in dependencies:
 		operators[a].downstream.add(b)
 		operators[b].upstream.add(a)
 
-	fileName = "workflow_" + workflowId + ".txt"
+	# write current workflow object to a file with unique file name under the workflows directory
 	dirPath = os.path.join(os.getcwd(), "workflows")
-	filePath = os.path.join(dirPath, fileName)
+	filePath = os.path.join(dirPath, "workflow_" + workflowId + ".txt")
 	if not os.path.isdir(dirPath):
 		os.mkdir(dirPath)
 	with open(filePath, 'w+b') as workflows_file:
 		pickle.dump(Workflow(workflowId, operators), workflows_file)
+
 
 def execute_workflow(workflowId: str, lfuCache) -> list[Result]:
 	"""
@@ -80,38 +79,46 @@ def execute_workflow(workflowId: str, lfuCache) -> list[Result]:
 	    a list of `result` of operators who are not dependencies of 
 			any other operators (also called the "sink" operators).
 	"""
-
+	
+	# retrieve a workflow object using cache method 
 	curWorkflow = lfuCache.get(workflowId)
-	if curWorkflow == -1:
+	if not curWorkflow:
 		print("Oops!  The workflow is not registered.  Try again...")
 		return
-	lfuCache.put(workflowId, curWorkflow)
-	dag = copy.deepcopy(curWorkflow.dag)
+	lfuCache.update(workflowId, curWorkflow)
+	
+	dag = copy.deepcopy(curWorkflow.dag) 		 # create a deep copy of the object to prevent errors caused by unintended modification
 
-	todo =[]
-	executions = {}
-	sinkID = set()
-	results = []
+	todo =[]					# list of operators - keep track of operators that has no upstream
+	executions = {}				# (k: operatorid, v: results) - maintain a mapping between operator id and result produced after execution
+	sinkID = set()				# set of operator id - keep track of operators that has no downstream
+	results = []				# list of results - keep track of results produced by sink operators
 
-	# extract source operators
+	# find source operator id and sink operator id
 	for op in dag.values():
 		if not op.upstream:
 			todo.append(op)
 		if not op.downstream:
 			sinkID.add(op.operatorId)
 			print(sinkID)
-	# execute source operators
+	
+	# execute operator that has dependencies met
 	while todo:
 		op = todo.pop()
 		inputs = [executions[id] for id in op.upstream]
 		executions[op.operatorId] = op.execute(inputs)
+	
 		if op.operatorId in sinkID:
 			results.append(executions[op.operatorId])
+
+		# after execution, remove current operator from its downstream operators' upstream
 		for downstream in op.downstream:
-			# make a copy for upstream and downstream
 			dag[downstream].upstream.remove(op.operatorId)
+
+			# check whether all dependencies have been met for current operator
 			if not dag[downstream].upstream:
 				todo.append(dag[downstream])
+
 	return results
 
 

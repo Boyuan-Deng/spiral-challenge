@@ -25,7 +25,7 @@ operatorDictOne = {"one":funcOne, "two":funcTwo, "three":funcThree}
 operatorDictTwo = {"one":funcOne, "two":funcTwo, "three":funcThree, "four":funcFour, "five":funcFive}
 dependencyLstOne = [("one", "two"), ("two", "three"), ("one", "three")]
 dependencyLstTwo = [("one", "two"), ("two", "three"), ("one", "three"), ("four", "one"), ("three", "five")]
-# register_workflow(workflowIdOne, operatorDictOne, dependencyLstOne)
+register_workflow(workflowIdOne, operatorDictOne, dependencyLstOne)
 register_workflow(workflowIdTwo, operatorDictTwo, dependencyLstTwo)
 register_workflow(workflowIdThree, operatorDictTwo, dependencyLstTwo)
 register_workflow("456789", operatorDictTwo, dependencyLstTwo)
