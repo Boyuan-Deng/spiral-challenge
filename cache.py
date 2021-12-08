@@ -10,10 +10,18 @@ class Cache:
     When the cache reached its maximum capacity, the cache should invalidate the least 
     frequently used element (First In First Out as a tie breaker) before inserting a new element.
 
-    After internet research, I chose LRU eviction policy because data scientists tend to use a small 
+    Trade-offs:
+    After internet research, I chose LFU eviction policy because data scientists tend to use a small 
     portion of workflows way more frequently comparing to the rest of the workflows. Given the above 
-    assumption, LRU eviction policy will produce the highest hit rate which means faster execution due 
+    assumption, LFU eviction policy will produce the highest hit rate which means faster execution due 
     to less disk reading
+
+    One potential alternative is least recently used policy. Least recently used eviction policy also generate 
+    excellent hit rate if there are workflows that are executed way more often than other workflows because 
+    it organizes items in order of use and invalidate the least recently used element when the cache reaches 
+    maximum. LRU eviction policy also has a simpler implementation and a better space complexity because LRU 
+    is basically storing a list of workflows. Hence, I would argue LRU is also a valid option but LFU is a 
+    straight-forward solution because LFU directly relies on frequency of usage. 
 	"""
 
     def __init__(self, capacity: bytes):
