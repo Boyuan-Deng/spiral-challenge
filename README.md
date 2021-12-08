@@ -8,4 +8,3 @@ The project keeps persistance of workflow and operator state by creating a one-t
 
 ## Test
 create your own test or run `python test.py` in the corresponding directory
->>>>>>> 05a69430cf88d3b5dddbaac367c99cc2cafb48f5
